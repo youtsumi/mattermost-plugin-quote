@@ -106,8 +106,6 @@ func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model
 		additionalText = fmt.Sprintf("%s\n\n", additionalText)
 	}
 
-	// TODO: check same channel?
-	p.API.LogDebug("dialog", "to_channel", toChannel)
 	postLink := fmt.Sprintf("%s/%s/pl/%s", *p.ServerConfig.ServiceSettings.SiteURL, team.Name, postId)
 	if _, err := p.API.CreatePost(&model.Post{
 		Type:      model.POST_DEFAULT,
