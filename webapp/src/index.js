@@ -23,9 +23,9 @@ export default class Plugin {
                     url: getPluginServerRoute(store.getState()) + '/api/v1/share',
                     dialog: {
                         callback_id: postId,
-                        title: 'Sample Dialog',
+                        title: 'Share post',
                         elements: [{
-                            display_name: 'Shared to',
+                            display_name: 'Share to...',
                             name: 'to_channel',
                             type: 'select',
                             data_source: 'channels',
