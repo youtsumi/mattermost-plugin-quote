@@ -105,7 +105,7 @@ func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model
 		Type:      model.POST_DEFAULT,
 		UserId:    request.UserId,
 		ChannelId: toChannel,
-		Message:   fmt.Sprintf("Shared: %s", postLink),
+		Message:   fmt.Sprintf("> Shared from %s", postLink),
 	}); err != nil {
 		p.API.LogWarn("Failed to create post", "error", err.Error())
 		return toPtr("Failed to create post"), nil, fmt.Errorf("Failed to create post %w", err)
