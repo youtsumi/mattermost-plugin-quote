@@ -1,10 +1,56 @@
-import manifest from './manifest';
+import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels'
+import {isOpenChannel} from 'mattermost-redux/utils/channel_utils'
+
+import {id as pluginId} from './manifest';
 
 export default class Plugin {
     // eslint-disable-next-line no-unused-vars
     initialize(registry, store) {
-        // @see https://developers.mattermost.com/extend/plugins/webapp/reference/
+        registry.registerPostDropdownMenuAction(
+            'Share post',
+            (postId) => {
+                const extra_elements = [];
+                if (!isOpenChannel(getCurrentChannel(store.getState()))) {
+                    extra_elements.push({
+                        display_name: "This channel is not public. Are you sure to share this post to other channel?",
+                        name: 'force_share',
+                        type: 'bool',
+                        placeholder: 'Yes, I confirm that this post share to other channel.',
+                    });
+                }
+                window.openInteractiveDialog({
+                    url: getPluginServerRoute(store.getState()) + '/api/v1/share',
+                    dialog: {
+                        callback_id: postId,
+                        title: 'Sample Dialog',
+                        elements: [{
+                            display_name: 'Shared to',
+                            name: 'to_channel',
+                            type: 'select',
+                            data_source: 'channels',
+                        }, ...extra_elements],
+                        submit_label: 'Share',
+                    }
+                });
+            }
+        );
     }
 }
 
-window.registerPlugin(manifest.id, new Plugin());
+const getPluginServerRoute = (state) => {
+    const config = getConfig(state);
+
+    let basePath = '/';
+    if (config && config.SiteURL) {
+        basePath = new URL(config.SiteURL).pathname;
+
+        if (basePath && basePath[basePath.length - 1] === '/') {
+            basePath = basePath.substr(0, basePath.length - 1);
+        }
+    }
+
+    return basePath + '/plugins/' + pluginId;
+};
+
+window.registerPlugin(pluginId, new Plugin());

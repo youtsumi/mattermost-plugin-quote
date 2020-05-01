@@ -6,7 +6,7 @@ const manifest = JSON.parse(`
     "name": "Quote (like Rocket Chat) Plugin",
     "description": "This plugin turns links to scrollback into pretty quotes",
     "version": "0.1.0",
-    "min_server_version": "5.18.0",
+    "min_server_version": "5.16.0",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",

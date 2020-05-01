@@ -125,11 +125,11 @@ func applyManifest(manifest *model.Manifest) error {
 
 		// write generated code to file by using Go file template.
 		if err := ioutil.WriteFile(
-			"server/manifest.go",
+			"server/plugin/manifest.go",
 			[]byte(fmt.Sprintf(pluginIDGoFileTemplate, manifestStr)),
 			0644,
 		); err != nil {
-			return errors.Wrap(err, "failed to write server/manifest.go")
+			return errors.Wrap(err, "failed to write server/plugin/manifest.go")
 		}
 	}
 
