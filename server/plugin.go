@@ -24,12 +24,13 @@ type Plugin struct {
 }
 
 func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
-	p.API.LogWarn("XXXX")
+	// https://pkg.go.dev/github.com/mattermost/mattermost-server/v5/model
 	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
 	channel, err := p.API.GetChannel(post.ChannelId)
 	if err != nil {
 		return post, err.Message
 	}
+
 	team, err := p.API.GetTeam(channel.TeamId)
 	if err != nil {
 		return post, err.Message
@@ -49,17 +50,29 @@ func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mode
 			return post, err.Message
 		}
 
-		postUser, err := p.API.GetUser(oldPost.UserId)
+		oldchannel, err := p.API.GetChannel(oldPost.ChannelId)
 		if err != nil {
 			return post, err.Message
 		}
 
-		quote := fmt.Sprintf("**%s** at **%s** said:\n", postUser.Nickname, time.Unix(oldPost.CreateAt, 0))
-		messageLines := strings.Split(oldPost.Message, "\n")
-		for _, line := range messageLines {
-			quote = fmt.Sprintf("%s\n> %s", quote, line)
+		postUser, err := p.API.GetUser(oldPost.UserId)
+		if err != nil {
+			return post, err.Message
 		}
-		post.Message = strings.Replace(post.Message, match, quote, 1)
+		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000,0)
+		attachment := []*model.SlackAttachment{
+			{
+				Timestamp:  oldPost.CreateAt,
+				AuthorName: postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@"),
+				Text:       oldPost.Message,
+				Footer:     fmt.Sprintf("Posted in ~%s %s",
+						oldchannel.Name,
+						oldPostCreateAt.Format("on Mon 2 Jan 2006 at 15:04:05 MST"),
+					),
+			},
+			nil,
+		}
+		model.ParseSlackAttachment(post,attachment)
 	}
 
 	return post, ""
