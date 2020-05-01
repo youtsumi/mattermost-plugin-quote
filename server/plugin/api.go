@@ -9,13 +9,15 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/pkg/errors"
 )
 
 const (
-	toChannelKey = "to_channel"
-
-	STATE_NO_CONFIRMATION = "no_confirmation"
+	toChannelKey      = "to_channel"
+	additionalTextKey = "additional_text"
 )
+
+var messageGenericError = toPtr("Something went wrong. Please try again later.")
 
 type submitDialogHandler func(map[string]string, *model.SubmitDialogRequest) (*string, *model.SubmitDialogResponse, error)
 
@@ -86,17 +88,23 @@ func (p *SharePostPlugin) handleSubmitDialogRequest(handler submitDialogHandler)
 }
 
 func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model.SubmitDialogRequest) (*string, *model.SubmitDialogResponse, error) {
-	// TODO: check private channel post
 	postId := request.CallbackId
 	teamId := request.TeamId
 
 	team, appErr := p.API.GetTeam(teamId)
 	if appErr != nil {
 		p.API.LogError("Failed to get team", "team_id", teamId, "error", appErr.Error())
-		return toPtr("Failed to get team"), nil, fmt.Errorf("Failed to get team %w", appErr)
+		return messageGenericError, nil, fmt.Errorf("Failed to get team %w", appErr)
 	}
 
-	toChannel := request.Submission[toChannelKey].(string)
+	toChannel, ok := request.Submission[toChannelKey].(string)
+	if !ok {
+		return messageGenericError, nil, errors.Errorf("failed to get toChannel key. Value is: %v", request.Submission[toChannelKey])
+	}
+	additionalText, ok := request.Submission[additionalTextKey].(string)
+	if ok {
+		additionalText = fmt.Sprintf("%s\n\n", additionalText)
+	}
 
 	// TODO: check same channel?
 	p.API.LogDebug("dialog", "to_channel", toChannel)
@@ -105,10 +113,10 @@ func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model
 		Type:      model.POST_DEFAULT,
 		UserId:    request.UserId,
 		ChannelId: toChannel,
-		Message:   fmt.Sprintf("> Shared from %s", postLink),
+		Message:   fmt.Sprintf("%s> Shared from %s", additionalText, postLink),
 	}); err != nil {
 		p.API.LogWarn("Failed to create post", "error", err.Error())
-		return toPtr("Failed to create post"), nil, fmt.Errorf("Failed to create post %w", err)
+		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", err)
 	}
 	return nil, nil, nil
 }

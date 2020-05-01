@@ -29,7 +29,14 @@ export default class Plugin {
                             name: 'to_channel',
                             type: 'select',
                             data_source: 'channels',
-                        }, ...extra_elements],
+                            placeholder: 'Find a channel to share',
+                        }, ...extra_elements, {
+                            display_name: 'Additional Text',
+                            name: 'additional_text',
+                            type: 'textarea',
+                            optional: true,
+                            placeholder: 'Write an additional text (optional)',
+                        }],
                         submit_label: 'Share',
                     }
                 });
