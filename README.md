@@ -1,4 +1,4 @@
-# Plugin Starter Template [![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-starter-template/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-starter-template)
+# Share Post Plugin
 
 This plugin enable to share and move Mattermost post to other channels.
 
@@ -35,7 +35,6 @@ This plugin enable to share and move Mattermost post to other channels.
 * User cannot share/move the post to private channels / DM / GM
   * but the post in private channels / DM / GM can be shared/moved
 * User can share/move the post to all public channel even though the user doesn't belong to the channel
-
 
 ## TODO
 * Write tests
