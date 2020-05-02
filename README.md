@@ -1,76 +1,48 @@
 # Plugin Starter Template [![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-starter-template/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-starter-template)
 
-This plugin serves as a starting point for writing a Mattermost plugin. Feel free to base your own plugin off this repository.
+This plugin enable to share and move Mattermost post to other channels.
 
-To learn more about plugins, see [our plugin documentation](https://developers.mattermost.com/extend/plugins/).
+## Usage
+1. Click post dropdown menu and select `Share post` menu
+  * ![dropdown](./screenshots/dropdown.png)
+2. Input dialog element and push `share` button
+  * **Share to...**: The channel where selected post will be shared/moved
+  * **Share type**:
+    * **Share**: Share the post to selected channel
+    * **Move**: Move post to selected channel, and delete original post
+  * **Additionall Text**: Additional text for shared/moved post. Additional text will be inserted to a head of shared/moved post 
+  * ![dialog](./screenshots/dialog.png)
 
-## Getting Started
-Use GitHub's template feature to make a copy of this repository by clicking the "Use this template" button then clone outside of `$GOPATH`.
+### Shared post
+![shared_post](./screenshots/shared_post.png)
 
-Alternatively shallow clone the repository to a directory outside of `$GOPATH` matching your plugin name:
-```
-git clone --depth 1 https://github.com/mattermost/mattermost-plugin-starter-template com.example.my-plugin
-```
+### Moved post
+![moved_post](./screenshots/moved_post.png)
 
-Note that this project uses [Go modules](https://github.com/golang/go/wiki/Modules). Be sure to locate the project outside of `$GOPATH`, or allow the use of Go modules within your `$GOPATH` with an `export GO111MODULE=on`.
 
-Edit `plugin.json` with your `id`, `name`, and `description`:
-```
-{
-    "id": "com.example.my-plugin",
-    "name": "My Plugin",
-    "description": "A plugin to enhance Mattermost."
-}
-```
+## Notes
+* Creation time of moved post is the same as original post
+* After sharing post, there is no feedbacks (e.g.: redirect, ephemeral post)
+* After sharing post, if original post is deleted, the link to original post is invalid
+* Anyone can share/move posts created by others
+  * The author of moved post will be the author of original post, (not user who move the post)
+* when sharing the post having attached files, should be `true`
+  * If `false`, 
 
-Build your plugin:
-```
-make
-```
+## Limitation
+* Only the first occurrence of the link will be expanded
+* Cannot move the post that has parent/child posts (post thread)
+  * Root post can be moved, but all children will be deleted
+  * All children cannot be moved, because children must be the same channel as root post
+* User cannot share/move the post to private channels / DM / GM
+  * but the post in private channels / DM / GM can be shared/moved
+* User can share/move the post to all public channel even though the user doesn't belong to the channel
 
-This will produce a single plugin file (with support for multiple architectures) for upload to your Mattermost server:
 
-```
-dist/com.example.my-plugin.tar.gz
-```
+## TODO
+* Write tests
+* **Might need to Mattermost changes**
+  * Move thread
+  * After sharing , redirect to the new post
+  * Footer link in MessageAttachments
 
-There is a build target to automate deploying and enabling the plugin to your server, but it requires configuration and [http](https://httpie.org/) to be installed:
-```
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_USERNAME=admin
-export MM_ADMIN_PASSWORD=password
-make deploy
-```
-
-Alternatively, if you are running your `mattermost-server` out of a sibling directory by the same name, use the `deploy` target alone to  unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
-
-In production, deploy and upload your plugin via the [System Console](https://about.mattermost.com/default-plugin-uploads).
-
-## Q&A
-
-### How do I make a server-only or web app-only plugin?
-
-Simply delete the `server` or `webapp` folders and remove the corresponding sections from `plugin.json`. The build scripts will skip the missing portions automatically.
-
-### How do I include assets in the plugin bundle?
-
-Place them into the `assets` directory. To use an asset at runtime, build the path to your asset and open as a regular file:
-
-```go
-bundlePath, err := p.API.GetBundlePath()
-if err != nil {
-    return errors.Wrap(err, "failed to get bundle path")
-}
-
-profileImage, err := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "profile_image.png"))
-if err != nil {
-    return errors.Wrap(err, "failed to read profile image")
-}
-
-if appErr := p.API.SetProfileImage(userID, profileImage); appErr != nil {
-    return errors.Wrap(err, "failed to set profile image")
-}
-```
-
-### How do I build the plugin with unminified JavaScript?
-Use `make debug-dist` and `make debug-deploy` in place of `make dist` and `make deploy` to configure webpack to generate unminified Javascript.
