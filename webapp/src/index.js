@@ -30,7 +30,20 @@ export default class Plugin {
                             type: 'select',
                             data_source: 'channels',
                             placeholder: 'Find a channel to share',
-                        }, ...extra_elements, {
+                        }, ...extra_elements,
+                        {
+                            display_name: 'Share type',
+                            name: 'share_type',
+                            type: 'radio',
+                            default: 'share',
+                            options: [{
+                                text: 'Share',
+                                value: 'share',
+                            }, {
+                                text: 'Move',
+                                value: 'move',
+                            }]
+                        },{
                             display_name: 'Additional Text',
                             name: 'additional_text',
                             type: 'textarea',
