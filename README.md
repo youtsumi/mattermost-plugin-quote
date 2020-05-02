@@ -22,15 +22,13 @@ This plugin enable to share and move Mattermost post to other channels.
 
 ## Notes
 * Creation time of moved post is the same as original post
-* After sharing post, there is no feedbacks (e.g.: redirect, ephemeral post)
 * After sharing post, if original post is deleted, the link to original post is invalid
 * Anyone can share/move posts created by others
   * The author of moved post will be the author of original post, (not user who move the post)
-* when sharing the post having attached files, should be `true`
-  * If `false`, 
 
 ## Limitation
 * Only the first occurrence of the link will be expanded
+* Cannot share/move the post to channeld in different team
 * Cannot move the post that has parent/child posts (post thread)
   * Root post can be moved, but all children will be deleted
   * All children cannot be moved, because children must be the same channel as root post
@@ -43,6 +41,6 @@ This plugin enable to share and move Mattermost post to other channels.
 * Write tests
 * **Might need to Mattermost changes**
   * Move thread
-  * After sharing , redirect to the new post
+  * After sharing, redirect to the new post
+  * Message attachments should be enalbe to render multi images
   * Footer link in MessageAttachments
-
