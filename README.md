@@ -28,6 +28,7 @@ This plugin enable to share and move Mattermost post to other channels.
 * After sharing post, if original post is deleted, the link to original post is invalid
 * Anyone can share/move posts created by others
   * The author of moved post will be the author of original post, (not user who move the post)
+* If additional text has permalink to local post, it will be expanded and original post to share will not be expanded
 
 ## Limitation
 * Only the first occurrence of the link will be expanded
