@@ -117,6 +117,13 @@ func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model
 
 func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChannel, additionalText string) (*string, *model.SubmitDialogResponse, error) {
 	postId := request.CallbackId
+	channelId := request.ChannelId
+	channel, appErr := p.API.GetChannel(channelId)
+	if appErr != nil {
+		p.API.LogError("Failed to get channel", "channel_id", channelId, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+	}
+
 	teamId := request.TeamId
 	team, appErr := p.API.GetTeam(teamId)
 	if appErr != nil {
@@ -128,7 +135,7 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 		Type:      model.POST_DEFAULT,
 		UserId:    request.UserId,
 		ChannelId: toChannel,
-		Message:   fmt.Sprintf("%s> Shared from %s", additionalText, p.makePostLink(team.Name, postId)),
+		Message:   fmt.Sprintf("%s> Shared from ~%s. ([original post](%s))", additionalText, channel.Name, p.makePostLink(team.Name, postId)),
 	}); err != nil {
 		p.API.LogWarn("Failed to create post", "error", err.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", err)
@@ -138,6 +145,8 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 
 func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel, additionalText string) (*string, *model.SubmitDialogResponse, error) {
 	postId := request.CallbackId
+	teamId := request.TeamId
+
 	postList, appErr := p.API.GetPostThread(postId)
 	if appErr != nil {
 		p.API.LogError("Failed to get post list", "post_id", postId, "error", appErr.Error())
@@ -161,7 +170,11 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 		return toPtr("Cannot move the post to same channel."), nil, nil
 	}
 
-	teamId := request.TeamId
+	newChannel, appErr := p.API.GetChannel(toChannel)
+	if appErr != nil {
+		p.API.LogError("Failed to get channel", "channel_id", toChannel, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+	}
 	team, appErr := p.API.GetTeam(teamId)
 	if appErr != nil {
 		p.API.LogError("Failed to get team", "team_id", teamId, "error", appErr.Error())
@@ -182,7 +195,7 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 		p.API.LogError("Failed to create post", "error", appErr.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", appErr)
 	}
-	p.SendEphemeralPost(oldPost.ChannelId, request.UserId, fmt.Sprintf("This post is moved to %s", p.makePostLink(team.Name, movedPost.Id)))
+	p.SendEphemeralPost(oldPost.ChannelId, request.UserId, fmt.Sprintf("This post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id)))
 	return nil, nil, nil
 }
 
