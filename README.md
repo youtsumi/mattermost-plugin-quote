@@ -4,13 +4,16 @@ This plugin enable to share and move Mattermost post to other channels.
 
 ## Usage
 * 1. Click post dropdown menu and select `Share post` menu
+
 ![dropdown](./screenshots/dropdown.png)
+
 * 2. Input dialog element and push `share` button
   * **Share to...**: The channel where selected post will be shared/moved
   * **Share type**:
     * **Share**: Share the post to selected channel
     * **Move**: Move post to selected channel, and delete original post
   * **Additionall Text**: Additional text for shared/moved post. Additional text will be inserted to a head of shared/moved post 
+
 ![dialog](./screenshots/dialog.png)
 
 ### Shared post
