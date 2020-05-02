@@ -1,6 +1,6 @@
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels'
-import {isOpenChannel} from 'mattermost-redux/utils/channel_utils'
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
+import {isOpenChannel} from 'mattermost-redux/utils/channel_utils';
 
 import {id as pluginId} from './manifest';
 
@@ -10,10 +10,10 @@ export default class Plugin {
         registry.registerPostDropdownMenuAction(
             'Share post',
             (postId) => {
-                const extra_elements = [];
+                const extraElements = [];
                 if (!isOpenChannel(getCurrentChannel(store.getState()))) {
-                    extra_elements.push({
-                        display_name: "This channel is not public. Are you sure to share this post to other channel?",
+                    extraElements.push({
+                        display_name: 'This channel is not public. Are you sure to share this post to other channel?',
                         name: 'force_share',
                         type: 'bool',
                         placeholder: 'Yes, I confirm that this post share to other channel.',
@@ -30,7 +30,7 @@ export default class Plugin {
                             type: 'select',
                             data_source: 'channels',
                             placeholder: 'Find a channel to share',
-                        }, ...extra_elements,
+                        }, ...extraElements,
                         {
                             display_name: 'Share type',
                             name: 'share_type',
@@ -42,8 +42,8 @@ export default class Plugin {
                             }, {
                                 text: 'Move',
                                 value: 'move',
-                            }]
-                        },{
+                            }],
+                        }, {
                             display_name: 'Additional Text',
                             name: 'additional_text',
                             type: 'textarea',
@@ -51,7 +51,7 @@ export default class Plugin {
                             placeholder: 'Write an additional text (optional)',
                         }],
                         submit_label: 'Share',
-                    }
+                    },
                 });
             }
         );

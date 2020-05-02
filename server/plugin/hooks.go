@@ -10,6 +10,7 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
+// MessageWillBePosted expand contents of permalink of local post
 func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
 	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
 	channel, appErr := p.API.GetChannel(post.ChannelId)
@@ -31,8 +32,8 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 	// Only first post matched the pattern is expanded
 	for _, match := range selfLinkPattern.FindAllString(post.Message, 1) {
 		separated := strings.Split(match, "/")
-		postId := separated[len(separated)-1]
-		oldPost, appErr := p.API.GetPost(postId)
+		postID := separated[len(separated)-1]
+		oldPost, appErr := p.API.GetPost(postID)
 		if appErr != nil {
 			return post, appErr.Error()
 		}

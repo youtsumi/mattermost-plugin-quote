@@ -13,7 +13,7 @@ import (
 
 const minimumServerVersion = "5.16.0"
 
-// Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
+// SharePostPlugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type SharePostPlugin struct {
 	plugin.MattermostPlugin
 	router *mux.Router
@@ -28,6 +28,7 @@ type SharePostPlugin struct {
 	ServerConfig *model.Config
 }
 
+// OnActivate initialize the plugin
 func (p *SharePostPlugin) OnActivate() error {
 	err := p.checkServerVersion()
 	if err != nil {
@@ -55,6 +56,7 @@ func (p *SharePostPlugin) checkServerVersion() error {
 	return nil
 }
 
+// SendEphemeralPost send ephemeral post
 func (p *SharePostPlugin) SendEphemeralPost(channelID, userID, message string) {
 	ephemeralPost := &model.Post{
 		ChannelId: channelID,
