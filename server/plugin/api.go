@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -184,6 +185,7 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 	newPost := oldPost.Clone()
 	newPost.Id = ""
 	newPost.ChannelId = toChannel
+	newPost.UpdateAt = time.Now().UnixNano()
 	newPost.Message = fmt.Sprintf("%s%s", additionalText, oldPost.Message)
 
 	movedPost, appErr := p.API.CreatePost(newPost)
@@ -191,11 +193,11 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 		p.API.LogWarn("Failed to create post", "error", appErr.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", appErr)
 	}
-	if appErr := p.API.DeletePost(oldPost.Id); appErr != nil {
-		p.API.LogError("Failed to create post", "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", appErr)
-	}
-	p.SendEphemeralPost(oldPost.ChannelId, request.UserId, fmt.Sprintf("This post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id)))
+
+	oldPost.Message = fmt.Sprintf("This post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id))
+	model.ParseSlackAttachment(oldPost, []*model.SlackAttachment{})
+
+	p.API.UpdateEphemeralPost(request.UserId, oldPost)
 	return nil, nil, nil
 }
 
