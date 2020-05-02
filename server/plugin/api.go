@@ -127,6 +127,11 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 		p.API.LogError("Failed to get channel", "channel_id", channelID, "error", appErr.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
 	}
+	newChannel, appErr := p.API.GetChannel(toChannel)
+	if appErr != nil {
+		p.API.LogError("Failed to get channel", "channel_id", toChannel, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+	}
 
 	teamID := request.TeamId
 	team, appErr := p.API.GetTeam(teamID)
@@ -145,7 +150,7 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 		p.API.LogWarn("Failed to create post", "error", err.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", err)
 	}
-	p.SendEphemeralPost(channelID, userID, fmt.Sprintf("[This post](%s) is shared to ~%s. [New post](%s).", p.makePostLink(team.Name, postID), channel.Name, p.makePostLink(team.Name, newPost.Id)))
+	p.SendEphemeralPost(channelID, userID, fmt.Sprintf("[This post](%s) is shared to ~%s. [New post](%s).", p.makePostLink(team.Name, postID), newChannel.Name, p.makePostLink(team.Name, newPost.Id)))
 	return nil, nil, nil
 }
 
