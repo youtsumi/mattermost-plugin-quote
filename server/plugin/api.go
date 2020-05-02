@@ -146,6 +146,7 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 
 func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel, additionalText string) (*string, *model.SubmitDialogResponse, error) {
 	postId := request.CallbackId
+	userId := request.UserId
 	teamId := request.TeamId
 
 	postList, appErr := p.API.GetPostThread(postId)
@@ -187,6 +188,14 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 	newPost.ChannelId = toChannel
 	newPost.UpdateAt = time.Now().UnixNano()
 	newPost.Message = fmt.Sprintf("%s%s", additionalText, oldPost.Message)
+	newPost.Metadata = oldPost.Metadata
+
+	newFileIds, appErr := p.API.CopyFileInfos(userId, oldPost.FileIds)
+	if appErr != nil {
+		p.API.LogWarn("Failed to copy file ids", "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("Failed to copy fie ids %w", appErr)
+	}
+	newPost.FileIds = newFileIds
 
 	movedPost, appErr := p.API.CreatePost(newPost)
 	if appErr != nil {
@@ -195,7 +204,9 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 	}
 
 	oldPost.Message = fmt.Sprintf("This post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id))
+	oldPost.FileIds = model.StringArray{}
 	model.ParseSlackAttachment(oldPost, []*model.SlackAttachment{})
+	oldPost.Metadata = &model.PostMetadata{}
 
 	p.API.UpdateEphemeralPost(request.UserId, oldPost)
 	return nil, nil, nil
