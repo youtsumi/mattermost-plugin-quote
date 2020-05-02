@@ -59,11 +59,13 @@ func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mode
 		if err != nil {
 			return post, err.Message
 		}
+
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000,0)
 		attachment := []*model.SlackAttachment{
 			{
 				Timestamp:  oldPost.CreateAt,
 				AuthorName: postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@"),
+				AuthorIcon: fmt.Sprintf("%s/api/v4/users/%s/image", *siteURL, oldPost.UserId),
 				Text:       oldPost.Message,
 				Footer:     fmt.Sprintf("Posted in ~%s %s",
 						oldchannel.Name,
