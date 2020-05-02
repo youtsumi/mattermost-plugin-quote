@@ -61,11 +61,21 @@ func (p *Plugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*mode
 		}
 
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000,0)
+
+		AuthorName :=postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@")
+		fmtstmnt := "%s/api/v4/users/%s/image"
+		AuthorIcon :=fmt.Sprintf(fmtstmnt, *siteURL, oldPost.UserId)
+		if postUser.IsBot {
+			botUser := model.BotFromUser(postUser)
+			AuthorName = botUser.DisplayName
+			AuthorIcon = fmt.Sprintf(fmtstmnt, *siteURL, botUser.UserId)
+		}
+
 		attachment := []*model.SlackAttachment{
 			{
 				Timestamp:  oldPost.CreateAt,
-				AuthorName: postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@"),
-				AuthorIcon: fmt.Sprintf("%s/api/v4/users/%s/image", *siteURL, oldPost.UserId),
+				AuthorName: AuthorName,
+				AuthorIcon: AuthorIcon,
 				Text:       oldPost.Message,
 				Footer:     fmt.Sprintf("Posted in ~%s %s",
 						oldchannel.Name,
