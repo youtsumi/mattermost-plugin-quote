@@ -12,38 +12,47 @@ import (
 
 func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Post) (*model.Post, string) {
 	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
-	channel, err := p.API.GetChannel(post.ChannelId)
-	if err != nil {
-		return post, err.Message
+	channel, appErr := p.API.GetChannel(post.ChannelId)
+	if appErr != nil {
+		return post, appErr.Error()
 	}
 
-	team, err := p.API.GetTeam(channel.TeamId)
-	if err != nil {
-		return post, err.Message
+	team, appErr := p.API.GetTeam(channel.TeamId)
+	if appErr != nil {
+		return post, appErr.Error()
 	}
 
 	selfLink := fmt.Sprintf("%s/%s", *siteURL, team.Name)
-	selfLinkPattern, er := regexp.Compile(fmt.Sprintf("%s%s", selfLink, `/[\w/]+`))
-	if er != nil {
-		return post, er.Error()
+	selfLinkPattern, err := regexp.Compile(fmt.Sprintf("%s%s", selfLink, `/[\w/]+`))
+	if err != nil {
+		return post, err.Error()
 	}
 
-	for _, match := range selfLinkPattern.FindAllString(post.Message, -1) {
+	// Only first post matched the pattern is expanded
+	for _, match := range selfLinkPattern.FindAllString(post.Message, 1) {
 		separated := strings.Split(match, "/")
 		postId := separated[len(separated)-1]
-		oldPost, err := p.API.GetPost(postId)
-		if err != nil {
-			return post, err.Message
+		oldPost, appErr := p.API.GetPost(postId)
+		if appErr != nil {
+			return post, appErr.Error()
 		}
 
-		oldchannel, err := p.API.GetChannel(oldPost.ChannelId)
-		if err != nil {
-			return post, err.Message
+		newFileIds, appErr := p.API.CopyFileInfos(post.UserId, oldPost.FileIds)
+		if appErr != nil {
+			p.API.LogWarn("Failed to copy file ids", "error", appErr.Error())
+			return post, appErr.Error()
+		}
+		// CAUTION: if attaching over 5 files, error will occur
+		post.FileIds = append(post.FileIds, newFileIds...)
+
+		oldchannel, appErr := p.API.GetChannel(oldPost.ChannelId)
+		if appErr != nil {
+			return post, appErr.Error()
 		}
 
-		postUser, err := p.API.GetUser(oldPost.UserId)
-		if err != nil {
-			return post, err.Message
+		postUser, appErr := p.API.GetUser(oldPost.UserId)
+		if appErr != nil {
+			return post, appErr.Error()
 		}
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000, 0)
 		attachment := []*model.SlackAttachment{
