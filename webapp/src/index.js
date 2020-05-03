@@ -33,6 +33,7 @@ export default class Plugin {
                         }, ...extraElements,
                         {
                             display_name: 'Share type',
+                            help_text: 'NOTE: "Move" has the risk to disable integration features for this post',
                             name: 'share_type',
                             type: 'radio',
                             default: 'share',
