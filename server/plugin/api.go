@@ -20,6 +20,8 @@ const (
 
 	shareTypeShare = "share"
 	shareTypeMove  = "move"
+
+	postPropsKeyAdditionalText = "sharepost.additional_text"
 )
 
 var messageGenericError = toPtr("Something went wrong. Please try again later.")
@@ -140,12 +142,15 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 		return messageGenericError, nil, fmt.Errorf("Failed to get team %w", appErr)
 	}
 
-	newPost, err := p.API.CreatePost(&model.Post{
+	newPost := &model.Post{
 		Type:      model.POST_DEFAULT,
 		UserId:    request.UserId,
 		ChannelId: toChannel,
-		Message:   fmt.Sprintf("%s> Shared from ~%s. ([original post](%s))", additionalText, channel.Name, p.makePostLink(team.Name, postID)),
-	})
+		Message:   fmt.Sprintf("> Shared from ~%s. ([original post](%s))", channel.Name, p.makePostLink(team.Name, postID)),
+	}
+	newPost.SetProps(model.StringInterface{postPropsKeyAdditionalText: additionalText})
+
+	newPost, err := p.API.CreatePost(newPost)
 	if err != nil {
 		p.API.LogWarn("Failed to create post", "error", err.Error())
 		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", err)
@@ -197,8 +202,9 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 	newPost.Id = ""
 	newPost.ChannelId = toChannel
 	newPost.UpdateAt = time.Now().UnixNano()
-	newPost.Message = fmt.Sprintf("%s%s", additionalText, oldPost.Message)
+	newPost.Message = oldPost.Message
 	newPost.Metadata = oldPost.Metadata
+	newPost.SetProps(model.StringInterface{postPropsKeyAdditionalText: additionalText})
 
 	newFileIds, appErr := p.API.CopyFileInfos(userID, oldPost.FileIds)
 	if appErr != nil {

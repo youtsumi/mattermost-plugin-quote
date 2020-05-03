@@ -29,8 +29,11 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		return post, err.Error()
 	}
 
-	// Only first post matched the pattern is expanded
-	for _, match := range selfLinkPattern.FindAllString(post.Message, 1) {
+	matches := selfLinkPattern.FindAllString(post.Message, -1)
+	if len(matches) != 0 {
+		// Only first post matched the pattern is expanded, because can't deal with files that have more than five total attachments.
+		match := matches[0]
+
 		separated := strings.Split(match, "/")
 		postID := separated[len(separated)-1]
 		oldPost, appErr := p.API.GetPost(postID)
@@ -43,7 +46,7 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 			p.API.LogWarn("Failed to copy file ids", "error", appErr.Error())
 			return post, appErr.Error()
 		}
-		// CAUTION: if attaching over 5 files, error will occur
+		// NOTES: if attaching over 5 files, error will occur
 		post.FileIds = append(post.FileIds, newFileIds...)
 
 		oldchannel, appErr := p.API.GetChannel(oldPost.ChannelId)
@@ -56,6 +59,7 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 			return post, appErr.Error()
 		}
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000, 0)
+
 		attachment := []*model.SlackAttachment{
 			{
 				Timestamp:  oldPost.CreateAt,
@@ -71,6 +75,11 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		model.ParseSlackAttachment(post, attachment)
 	}
 
+	// Add additional comment written in dialog
+	// If adding first the additional text in the message, the link in the additional text will be expanded, so additional text have to be added here
+	if post.GetProp(postPropsKeyAdditionalText) != nil {
+		post.Message = fmt.Sprintf("%s%s", post.GetProp(postPropsKeyAdditionalText), post.Message)
+	}
 	return post, ""
 
 }
