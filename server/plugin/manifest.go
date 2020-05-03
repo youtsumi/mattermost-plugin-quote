@@ -12,11 +12,11 @@ var manifest *model.Manifest
 
 const manifestStr = `
 {
-  "id": "business.silly.quote",
-  "name": "Quote (like Rocket Chat) Plugin",
-  "description": "This plugin turns links to scrollback into pretty quotes",
+  "id": "com.github.kaakaa.sharepost",
+  "name": "Share Post Plugin",
+  "description": "This plugin shares/moves the post to other channels",
   "version": "0.1.0",
-  "min_server_version": "5.16.0",
+  "min_server_version": "5.18.0",
   "server": {
     "executables": {
       "linux-amd64": "server/dist/plugin-linux-amd64",
