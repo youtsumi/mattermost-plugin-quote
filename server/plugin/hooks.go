@@ -73,16 +73,16 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 				AuthorIcon: AuthorIcon,
 				Text:       oldPost.Message,
 				Footer:     fmt.Sprintf("Posted in ~%s %s",
-						oldchannel.Name,
-						oldPostCreateAt.Format("on Mon 2 Jan 2006 at 15:04:05 MST"),
-					),
-			},
-			nil,
-                }
-                model.ParseSlackAttachment(post,attachment)
-
+				oldchannel.Name,
+				oldPostCreateAt.Format("on Mon 2 Jan 2006 at 15:04:05 MST"),
+			),
+		},
+		nil,
 	}
+	model.ParseSlackAttachment(post,attachment)
 
-	return post, ""
+}
+
+return post, ""
 
 }
