@@ -56,7 +56,6 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 			return post, appErr.Error()
 		}
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000, 0)
-		ateAt := time.Unix(oldPost.CreateAt/1000,0)
 
 		AuthorName :=postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@")
 		fmtstmnt := "%s/api/v4/users/%s/image"
@@ -69,7 +68,7 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 
 		attachment := []*model.SlackAttachment{
 			{
-				Timestamp:  ateAt,
+				Timestamp:  oldPost.CreateAt,
 				AuthorName: AuthorName,
 				AuthorIcon: AuthorIcon,
 				Text:       oldPost.Message,
