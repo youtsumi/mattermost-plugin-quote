@@ -57,9 +57,9 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		}
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000, 0)
 
-		AuthorName :=postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME,"@")
+		AuthorName := postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME, "@")
 		fmtstmnt := "%s/api/v4/users/%s/image"
-		AuthorIcon :=fmt.Sprintf(fmtstmnt, *siteURL, oldPost.UserId)
+		AuthorIcon := fmt.Sprintf(fmtstmnt, *siteURL, oldPost.UserId)
 		if postUser.IsBot {
 			botUser := model.BotFromUser(postUser)
 			AuthorName = botUser.DisplayName
@@ -72,17 +72,17 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 				AuthorName: AuthorName,
 				AuthorIcon: AuthorIcon,
 				Text:       oldPost.Message,
-				Footer:     fmt.Sprintf("Posted in ~%s %s",
-				oldchannel.Name,
-				oldPostCreateAt.Format("on Mon 2 Jan 2006 at 15:04:05 MST"),
-			),
-		},
-		nil,
+				Footer: fmt.Sprintf("Posted in ~%s %s",
+					oldchannel.Name,
+					oldPostCreateAt.Format("on Mon 2 Jan 2006 at 15:04:05 MST"),
+				),
+			},
+			nil,
+		}
+		model.ParseSlackAttachment(post, attachment)
+
 	}
-	model.ParseSlackAttachment(post,attachment)
 
-}
-
-return post, ""
+	return post, ""
 
 }
