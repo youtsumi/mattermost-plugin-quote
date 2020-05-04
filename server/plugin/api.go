@@ -116,7 +116,7 @@ func (p *SharePostPlugin) handleSharePost(vars map[string]string, request *model
 	case shareTypeMove:
 		return p.movePost(request, toChannel, additionalText)
 	default:
-		return messageGenericError, nil, fmt.Errorf("Invalid share_type %s", shareType)
+		return messageGenericError, nil, fmt.Errorf("invalid share_type %s", shareType)
 	}
 }
 
@@ -126,27 +126,27 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 	channelID := request.ChannelId
 	channel, appErr := p.API.GetChannel(channelID)
 	if appErr != nil {
-		p.API.LogError("Failed to get channel", "channel_id", channelID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+		p.API.LogError("failed to get channel", "channel_id", channelID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get channel %w", appErr)
 	}
 	newChannel, appErr := p.API.GetChannel(toChannel)
 	if appErr != nil {
-		p.API.LogError("Failed to get channel", "channel_id", toChannel, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+		p.API.LogError("failed to get channel", "channel_id", toChannel, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get channel %w", appErr)
 	}
 
 	teamID := request.TeamId
 	team, appErr := p.API.GetTeam(teamID)
 	if appErr != nil {
-		p.API.LogError("Failed to get team", "team_id", teamID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get team %w", appErr)
+		p.API.LogError("failed to get team", "team_id", teamID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get team %w", appErr)
 	}
 
 	// TODO: remove for debuggin lines
 	postList, appErr := p.API.GetPostThread(postID)
 	if appErr != nil {
-		p.API.LogError("Failed to get post list", "post_id", postID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get post list %w", appErr)
+		p.API.LogError("failed to get post list", "post_id", postID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get post list %w", appErr)
 	}
 	p.API.LogDebug("ROOT: ", "post_id", postID)
 	postList.UniqueOrder()
@@ -176,8 +176,8 @@ func (p *SharePostPlugin) sharePost(request *model.SubmitDialogRequest, toChanne
 
 	newPost, err := p.API.CreatePost(newPost)
 	if err != nil {
-		p.API.LogWarn("Failed to create post", "error", err.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", err)
+		p.API.LogWarn("failed to create post", "error", err.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to create post %w", err)
 	}
 	p.SendEphemeralPost(channelID, userID, fmt.Sprintf("[This post](%s) is shared to ~%s. [New post](%s).", p.makePostLink(team.Name, postID), newChannel.Name, p.makePostLink(team.Name, newPost.Id)))
 	return nil, nil, nil
@@ -190,51 +190,51 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 
 	postList, appErr := p.API.GetPostThread(postID)
 	if appErr != nil {
-		p.API.LogError("Failed to get post list", "post_id", postID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get post list %w", appErr)
+		p.API.LogError("failed to get post list", "post_id", postID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get post list %w", appErr)
 	}
 	oldPost, appErr := p.API.GetPost(postID)
 	if appErr != nil {
-		p.API.LogError("Failed to get post", "post_id", postID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get post %w", appErr)
+		p.API.LogError("failed to get post", "post_id", postID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get post %w", appErr)
 	}
 
 	// Cannot move any child posts in thread to other channel
 	if len(postList.Posts) > 1 && oldPost.RootId != "" {
-		p.API.LogWarn("The post that has parent posts cannot be moved to other channel.", "post_id", postID)
-		return toPtr("The post that has parent posts cannot be moved to other channel."), nil, nil
+		p.API.LogWarn("the post that has parent posts cannot be moved to other channel.", "post_id", postID)
+		return toPtr("the post that has parent posts cannot be moved to other channel."), nil, nil
 	}
 	// Cannot move the post to same channel
 	if oldPost.ChannelId == toChannel {
-		p.API.LogWarn("Cannot move the post to same channel.")
-		return toPtr("Cannot move the post to same channel."), nil, nil
+		p.API.LogWarn("cannot move the post to same channel.")
+		return toPtr("cannot move the post to same channel."), nil, nil
 	}
 
 	newChannel, appErr := p.API.GetChannel(toChannel)
 	if appErr != nil {
-		p.API.LogError("Failed to get channel", "channel_id", toChannel, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get channel %w", appErr)
+		p.API.LogError("failed to get channel", "channel_id", toChannel, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get channel %w", appErr)
 	}
 	team, appErr := p.API.GetTeam(teamID)
 	if appErr != nil {
-		p.API.LogError("Failed to get team", "team_id", teamID, "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to get team %w", appErr)
+		p.API.LogError("failed to get team", "team_id", teamID, "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to get team %w", appErr)
 	}
 
 	// Create new post object
 	newPost, err := p.clonePost(oldPost, userID)
 	if err != nil {
-		return messageGenericError, nil, fmt.Errorf("Failed to clone post %w", err)
+		return messageGenericError, nil, fmt.Errorf("failed to clone post %w", err)
 	}
 	newPost.ChannelId = toChannel
 	newPost.SetProps(model.StringInterface{postPropsKeyAdditionalText: additionalText})
 
 	movedPost, appErr := p.API.CreatePost(newPost)
 	if appErr != nil {
-		p.API.LogWarn("Failed to create post", "error", appErr.Error())
-		return messageGenericError, nil, fmt.Errorf("Failed to create post %w", appErr)
+		p.API.LogWarn("failed to create post", "error", appErr.Error())
+		return messageGenericError, nil, fmt.Errorf("failed to create post %w", appErr)
 	}
-	p.API.LogDebug("Success to create new post", "original_post_id", postID, "moved_post_id", movedPost.Id)
+	p.API.LogDebug("success to create new post", "original_post_id", postID, "moved_post_id", movedPost.Id)
 
 	// Move children in thread
 	createdPostIds := []string{movedPost.Id}
@@ -246,20 +246,20 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 			if id == postID {
 				continue
 			}
-			p.API.LogDebug("Start to move children in thread.", "post_id", id)
+			p.API.LogDebug("start to move children in thread.", "post_id", id)
 			oldChildPost, appErr := p.API.GetPost(id)
 			if appErr != nil {
 				p.API.LogWarn("failed to get post.", "post_id", oldChildPost.Id)
 				if appErr = p.rollback(createdPostIds); appErr != nil {
 					p.API.LogWarn("failed to rollback post thread")
-					return messageGenericError, nil, fmt.Errorf("Failed to create post thread: %s", appErr.Error())
+					return messageGenericError, nil, fmt.Errorf("failed to create post thread: %s", appErr.Error())
 				}
 			}
 			newChildPost, err := p.clonePost(oldChildPost, userID)
 			if err != nil {
 				if appErr = p.rollback(createdPostIds); appErr != nil {
 					p.API.LogWarn("failed to rollback post thread")
-					return messageGenericError, nil, fmt.Errorf("Failed to create post thread: %w", err)
+					return messageGenericError, nil, fmt.Errorf("failed to create post thread: %w", err)
 				}
 			}
 			newChildPost.ChannelId = toChannel
@@ -270,23 +270,25 @@ func (p *SharePostPlugin) movePost(request *model.SubmitDialogRequest, toChannel
 				p.API.LogWarn("failed to update post.", "post_id", newChildPost.Id, "error", appErr.Error())
 				if appErr = p.rollback(createdPostIds); appErr != nil {
 					p.API.LogWarn("failed to rollback post thread")
-					return messageGenericError, nil, fmt.Errorf("Failed to create post thread and rollback: %s", appErr.Error())
+					return messageGenericError, nil, fmt.Errorf("failed to create post thread and rollback: %s", appErr.Error())
 				}
-				return messageGenericError, nil, fmt.Errorf("Failed to create post thread: %s", appErr.Error())
+				return messageGenericError, nil, fmt.Errorf("failed to create post thread: %s", appErr.Error())
 			}
 			createdPostIds = append(createdPostIds, newCreatedChildPost.Id)
 			willDeletePostIds = append(willDeletePostIds, id)
 		}
-		p.API.LogDebug("Done moving thread.", "original_post_id", postID)
+		p.API.LogDebug("done moving thread.", "original_post_id", postID)
 	}
 
 	oldPost.Type = model.POST_SYSTEM_GENERIC
-	oldPost.Message = fmt.Sprintf("This post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id))
+	oldPost.Message = fmt.Sprintf("Ttis post is moved to ~%s. [New post](%s)", newChannel.Name, p.makePostLink(team.Name, movedPost.Id))
 	oldPost.FileIds = model.StringArray{}
 	model.ParseSlackAttachment(oldPost, []*model.SlackAttachment{})
 	oldPost.Metadata = &model.PostMetadata{}
 
-	p.API.UpdatePost(oldPost)
+	if _, appErr := p.API.UpdatePost(oldPost); appErr != nil {
+		p.API.LogWarn("failed to update moved post.", "post_id", oldPost.Id, "error", appErr.Error())
+	}
 
 	for _, id := range willDeletePostIds {
 		if appErr := p.API.DeletePost(id); appErr != nil {
@@ -305,8 +307,8 @@ func (p *SharePostPlugin) clonePost(old *model.Post, userID string) (*model.Post
 	// Create the reference to attached files
 	newFileIds, appErr := p.API.CopyFileInfos(userID, old.FileIds)
 	if appErr != nil {
-		p.API.LogWarn("Failed to copy file ids", "error", appErr.Error())
-		return nil, fmt.Errorf("Failed to copy fie ids %w", appErr)
+		p.API.LogWarn("failed to copy file ids", "error", appErr.Error())
+		return nil, fmt.Errorf("failed to copy fie ids %w", appErr)
 	}
 	newPost.FileIds = newFileIds
 	return newPost, nil

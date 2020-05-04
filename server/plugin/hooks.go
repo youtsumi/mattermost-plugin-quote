@@ -81,5 +81,4 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		post.Message = fmt.Sprintf("%s%s", post.GetProp(postPropsKeyAdditionalText), post.Message)
 	}
 	return post, ""
-
 }

@@ -46,12 +46,12 @@ func (p *SharePostPlugin) OnActivate() error {
 func (p *SharePostPlugin) checkServerVersion() error {
 	serverVersion, err := semver.Parse(p.API.GetServerVersion())
 	if err != nil {
-		return fmt.Errorf("Failed to parse server version %w", err)
+		return fmt.Errorf("failed to parse server version %w", err)
 	}
 
 	r := semver.MustParseRange(">=" + minimumServerVersion)
 	if !r(serverVersion) {
-		return fmt.Errorf("This plugin requires Mattermost v%s or later", minimumServerVersion)
+		return fmt.Errorf("this plugin requires Mattermost v%s or later", minimumServerVersion)
 	}
 	return nil
 }

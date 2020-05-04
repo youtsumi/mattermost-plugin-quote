@@ -18,6 +18,8 @@ func TestServeHTTP(t *testing.T) {
 	plugin.ServeHTTP(nil, w, r)
 
 	result := w.Result()
+	defer result.Body.Close()
+
 	assert.NotNil(result)
 	bodyBytes, err := ioutil.ReadAll(result.Body)
 	assert.Nil(err)
