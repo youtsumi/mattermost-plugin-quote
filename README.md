@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/kaakaa/mattermost-plugin-sharepost.svg?style=svg)](https://circleci.com/gh/kaakaa/mattermost-plugin-sharepost)
+
 # Share Post Plugin
 
 This plugin enable to share and move Mattermost post to other channels.
