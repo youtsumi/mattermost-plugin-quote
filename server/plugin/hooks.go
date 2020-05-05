@@ -60,10 +60,20 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		}
 		oldPostCreateAt := time.Unix(oldPost.CreateAt/1000, 0)
 
+		AuthorName := postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME, "@")
+		fmtstmnt := "%s/api/v4/users/%s/image"
+		AuthorIcon := fmt.Sprintf(fmtstmnt, *siteURL, oldPost.UserId)
+		if postUser.IsBot {
+			botUser := model.BotFromUser(postUser)
+			AuthorName = botUser.DisplayName
+			AuthorIcon = fmt.Sprintf(fmtstmnt, *siteURL, botUser.UserId)
+		}
+
 		attachment := []*model.SlackAttachment{
 			{
 				Timestamp:  oldPost.CreateAt,
-				AuthorName: postUser.GetDisplayNameWithPrefix(model.SHOW_NICKNAME_FULLNAME, "@"),
+				AuthorName: AuthorName,
+				AuthorIcon: AuthorIcon,
 				Text:       oldPost.Message,
 				Footer: fmt.Sprintf("Posted in ~%s %s",
 					oldchannel.Name,
@@ -73,6 +83,7 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 			nil,
 		}
 		model.ParseSlackAttachment(post, attachment)
+
 	}
 
 	// Add additional comment written in dialog
