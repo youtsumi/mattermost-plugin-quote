@@ -36,6 +36,9 @@ This plugin enable to share and move Mattermost post to other channels.
 
 ## Limitation
 * Only the first occurrence of the link will be expanded
+* Sometimes expanding is not work in mobile app (#2)
+* Timestamp in the footer of expanded post will probably be displayed in the server's Timezone time (#3)
+  * ignoring the user's timezone setting
 * Cannot share/move the post to channeld in different team
 * Cannot move any reactions
 * Cannot move the post that has parent posts (post thread)
