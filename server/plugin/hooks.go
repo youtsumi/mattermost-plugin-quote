@@ -83,7 +83,6 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 			nil,
 		}
 		model.ParseSlackAttachment(post, attachment)
-
 	}
 
 	// Add additional comment written in dialog
