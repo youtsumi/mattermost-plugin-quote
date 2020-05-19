@@ -18,7 +18,7 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		return post, appErr.Error()
 	}
 
-	if channel.Type == model.CHANNEL_DIRECT {
+	if channel.Type == model.CHANNEL_DIRECT || channel.Type == model.CHANNEL_GROUP {
 		return post, ""
 	}
 
