@@ -18,6 +18,10 @@ func (p *SharePostPlugin) MessageWillBePosted(c *plugin.Context, post *model.Pos
 		return post, appErr.Error()
 	}
 
+	if channel.Type == model.CHANNEL_DIRECT {
+		return post, ""
+	}
+
 	team, appErr := p.API.GetTeam(channel.TeamId)
 	if appErr != nil {
 		return post, appErr.Error()
